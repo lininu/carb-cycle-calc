@@ -470,10 +470,17 @@
       </div>
       <div class="slider-row">
         <div class="slider-head">
-          <span class="s-label">週訓練天數</span>
+          <span class="s-label">訓練天數（高碳日）</span>
           <span class="s-val" id="trainDaysOut">3 天</span>
         </div>
-        <input type="range" id="trainDays" min="2" max="6" step="1" value="3">
+        <input type="range" id="trainDays" min="1" max="6" step="1" value="3">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">休息天數（低碳日）</span>
+          <span class="s-val" id="restDaysOut">2 天</span>
+        </div>
+        <input type="range" id="restDays" min="1" max="5" step="1" value="2">
       </div>
       <div class="slider-row">
         <div class="slider-head">
@@ -506,22 +513,35 @@
 
   function calcBMR(w, h, a) { return 10 * w + 6.25 * h - 5 * a - 161; }
 
+  function updateRestDaysMax() {
+    const trainDays = val('trainDays');
+    const restSlider = document.getElementById('restDays');
+    const maxRest = 7 - trainDays - 0; // midDays 可以為 0
+    restSlider.max = Math.min(maxRest, 6 - trainDays + 1);
+    if (val('restDays') > +restSlider.max) restSlider.value = restSlider.max;
+    if (val('restDays') < 1) restSlider.value = 1;
+  }
+
   function render() {
+    updateRestDaysMax();
+
     const weight    = val('weight');
     const height    = val('height');
     const age       = val('age');
     const trainDays = val('trainDays');
+    const restDays  = val('restDays');
+    const midDays   = Math.max(0, 7 - trainDays - restDays);
     const deficit   = val('deficit');
 
     document.getElementById('weightOut').textContent    = weight    + ' kg';
     document.getElementById('heightOut').textContent    = height    + ' cm';
     document.getElementById('ageOut').textContent       = age       + ' 歲';
     document.getElementById('trainDaysOut').textContent = trainDays + ' 天';
+    document.getElementById('restDaysOut').textContent  = restDays  + ' 天';
     document.getElementById('deficitOut').textContent   = '−' + deficit + ' kcal';
 
     const bmr  = Math.round(calcBMR(weight, height, age));
     const tdee = Math.round(bmr * actMultiplier);
-    const restDays = 7 - trainDays;
 
     const protein     = Math.round(weight * 2.2);
     const fat         = Math.round(weight * 0.8);
@@ -538,7 +558,7 @@
     const midCarb   = Math.round((highCarb + lowCarb) / 2);
     const midTotal  = baseCal + midCarb * 4;
 
-    const weekAvg   = Math.round((highTotal * trainDays + lowTotal * restDays) / 7);
+    const weekAvg   = Math.round((highTotal * trainDays + midTotal * midDays + lowTotal * restDays) / 7);
     const weekDef   = tdee - weekAvg;
     const estLoss   = (weekDef * 7 / 7700).toFixed(2);
 
@@ -572,7 +592,7 @@
         <div class="d-row"><span class="ml">蛋白質</span><span class="mv">${protein}g</span></div>
         <div class="d-row"><span class="ml">脂肪</span><span class="mv">${fat}g</span></div>
         <div class="d-total"><span class="ml">總熱量</span><span class="mv">${midTotal} kcal</span></div>
-        <span class="pill pm">輕度活動日</span>
+        <span class="pill pm">輕度活動日 × ${midDays}天</span>
       </div>
       <div class="day-card low-day">
         <div class="d-title">低碳日</div>
@@ -599,7 +619,7 @@
     render();
   });
 
-  ['weight','height','age','trainDays','deficit'].forEach(id => {
+  ['weight','height','age','trainDays','restDays','deficit'].forEach(id => {
     document.getElementById(id).addEventListener('input', render);
   });
 
