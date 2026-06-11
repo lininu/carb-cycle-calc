@@ -1,214 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>碳循環計算機</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<style>
-  .cc-wrap { padding: 1.5rem 0; font-size: 14px; color: var(--color-text-primary); }
-  .intro { margin-bottom: 1.75rem; }
-  .intro h2 { font-size: 18px; font-weight: 500; margin: 0 0 6px; }
-  .intro p { font-size: 14px; color: var(--color-text-secondary); margin: 0 0 1rem; line-height: 1.7; }
-  .steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .steps li { display: flex; gap: 12px; font-size: 13px; line-height: 1.6; }
-  .steps li .num { min-width: 22px; height: 22px; border-radius: 50%; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
-  .steps li .content { color: var(--color-text-primary); }
-  .steps li .content .muted { color: var(--color-text-secondary); }
-  .sub-list { margin: 4px 0 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
-  .sub-list li { font-size: 12px; color: var(--color-text-secondary); padding-left: 10px; position: relative; }
-  .sub-list li::before { content: "·"; position: absolute; left: 0; }
-  code { font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 4px; }
-  .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.5rem 0; }
-  .cc-section { margin-bottom: 1.5rem; }
-  .cc-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px; }
-  .cc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .cc-row label { min-width: 100px; font-size: 13px; color: var(--color-text-secondary); }
-  .cc-row input[type=range] { flex: 1; }
-  .cc-row .val { min-width: 52px; font-size: 14px; font-weight: 500; text-align: right; }
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
-  .stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
-  .stat-card .s-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
-  .stat-card .s-val { font-size: 22px; font-weight: 500; }
-  .day-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .day-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px; background: var(--color-background-primary); }
-  .day-card .d-title { font-size: 12px; font-weight: 500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .day-card .d-macro { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
-  .day-card .d-macro .m-label { color: var(--color-text-secondary); }
-  .day-card .d-macro .m-val { font-weight: 500; }
-  .high-day .d-title { color: #1D9E75; }
-  .mid-day .d-title { color: #378ADD; }
-  .low-day .d-title { color: #D85A30; }
-  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-top: 6px; }
-  .pill-high { background: #E1F5EE; color: #0F6E56; }
-  .pill-mid { background: #E6F1FB; color: #185FA5; }
-  .pill-low { background: #FAECE7; color: #993C1D; }
-  .activity-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .act-btn { padding: 6px 14px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; cursor: pointer; color: var(--color-text-primary); }
-  .act-btn.active { background: var(--color-background-secondary); border-color: var(--color-border-primary); font-weight: 500; }
-  .info-row { font-size: 13px; color: var(--color-text-secondary); margin-top: 10px; line-height: 1.7; }
-  .info-row strong { color: var(--color-text-primary); }
-  .warn { font-size: 12px; color: #993C1D; background: #FAECE7; border-radius: var(--border-radius-md); padding: 6px 10px; margin-top: 8px; display: none; }
-</style>
+    :root {
+      --bg:       #0C0C0F;
+      --surface:  #141418;
+      --surface2: #1C1C22;
+      --border:   rgba(255,255,255,0.07);
+      --text:     #EEEAE0;
+      --muted:    rgba(238,234,224,0.42);
+      --high:     #22C55E;
+      --mid:      #60A5FA;
+      --low:      #FB923C;
+      --high-bg:  rgba(34,197,94,0.09);
+      --mid-bg:   rgba(96,165,250,0.09);
+      --low-bg:   rgba(251,146,60,0.09);
+    }
 
-<div class="cc-wrap">
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 56px 24px 96px;
+    }
 
-  <div class="intro">
-    <h2>碳循環的核心概念</h2>
-    <p>碳循環（Carb Cycling）就是根據當天的活動量，調整碳水化合物攝取量，同時保持蛋白質與脂肪相對穩定。</p>
-    <p style="font-size:13px; font-weight:500; color:var(--color-text-primary); margin-bottom:6px;">計算步驟總結</p>
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header { margin-bottom: 52px; }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(38px, 7vw, 60px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin-bottom: 18px;
+    }
+
+    h1 .grad {
+      background: linear-gradient(120deg, var(--high) 0%, var(--mid) 55%, var(--low) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-desc {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 460px;
+    }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 26px 28px;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    /* ── Steps ── */
+    .steps { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+
+    .step { display: flex; gap: 13px; align-items: flex-start; }
+
+    .step-n {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--bg);
+      background: var(--muted);
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-body {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .step-body strong { color: var(--text); font-weight: 500; }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--surface2);
+      color: var(--mid);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    .sub { list-style: none; margin-top: 5px; display: flex; flex-direction: column; gap: 3px; }
+    .sub li { font-size: 12px; color: var(--muted); padding-left: 14px; position: relative; }
+    .sub li::before { content: '—'; position: absolute; left: 0; font-size: 10px; }
+
+    /* ── Controls ── */
+    .act-row { margin-bottom: 22px; }
+
+    .ctl-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
+    .act-btns { display: flex; gap: 7px; flex-wrap: wrap; }
+
+    .act-btn {
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.18s;
+    }
+
+    .act-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+
+    .act-btn.active {
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
+    }
+
+    .sliders-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px 36px;
+    }
+
+    @media (max-width: 560px) { .sliders-grid { grid-template-columns: 1fr; } }
+
+    .slider-row { display: flex; flex-direction: column; gap: 9px; }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .s-label { font-size: 12px; font-weight: 500; color: var(--muted); }
+
+    .s-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      background: var(--text);
+      box-shadow: 0 0 0 3px rgba(238,234,224,0.13);
+      transition: box-shadow 0.18s;
+    }
+
+    input[type=range]:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 0 5px rgba(238,234,224,0.18);
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      border: none;
+      background: var(--text);
+      cursor: pointer;
+    }
+
+    /* ── Stat cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 560px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 16px 14px;
+    }
+
+    .sc-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    .sc-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .sc-unit {
+      font-size: 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      color: var(--muted);
+      margin-left: 3px;
+    }
+
+    /* ── Warning ── */
+    .warn {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--low);
+      background: var(--low-bg);
+      border: 1px solid rgba(251,146,60,0.18);
+      border-radius: 11px;
+      padding: 11px 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    /* ── Day cards ── */
+    .day-section-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 560px) { .day-grid { grid-template-columns: 1fr; } }
+
+    .day-card {
+      border-radius: 15px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .day-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .high-day { background: var(--high-bg); border: 1px solid rgba(34,197,94,0.14); }
+    .high-day::after { background: var(--high); }
+    .mid-day  { background: var(--mid-bg);  border: 1px solid rgba(96,165,250,0.14); }
+    .mid-day::after  { background: var(--mid); }
+    .low-day  { background: var(--low-bg);  border: 1px solid rgba(251,146,60,0.14); }
+    .low-day::after  { background: var(--low); }
+
+    .d-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .high-day .d-title { color: var(--high); }
+    .mid-day  .d-title { color: var(--mid);  }
+    .low-day  .d-title { color: var(--low);  }
+
+    .d-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+    }
+
+    .d-row:last-of-type { border-bottom: none; }
+
+    .d-row .ml { font-size: 12px; font-weight: 300; color: var(--muted); }
+    .d-row .mv { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
+
+    .d-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .d-total .ml { font-size: 12px; font-weight: 500; color: var(--text); }
+
+    .pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 3px 9px;
+      border-radius: 100px;
+      margin-top: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .ph { background: rgba(34,197,94,0.13);  color: var(--high); }
+    .pm { background: rgba(96,165,250,0.13); color: var(--mid);  }
+    .pl { background: rgba(251,146,60,0.13); color: var(--low);  }
+
+    /* ── Info row ── */
+    .info-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 17px 20px;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.85;
+    }
+
+    .info-panel strong { color: var(--text); font-weight: 500; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="eyebrow">Nutrition Tool</div>
+    <h1>碳<span class="grad">循環</span><br>計算機</h1>
+    <p class="header-desc">根據當天活動量調整碳水攝取，保持蛋白質與脂肪穩定。是目前最主流的增肌減脂策略之一。</p>
+  </header>
+
+  <!-- Steps -->
+  <div class="panel">
+    <div class="panel-title">計算邏輯</div>
     <ol class="steps">
-      <li><span class="num">1</span><span class="content">算 BMR（基礎代謝率）→ 女性用 Mifflin-St Jeor 公式：<code>(10×體重) + (6.25×身高) - (5×年齡) - 161</code></span></li>
-      <li><span class="num">2</span><span class="content">算 TDEE（每日總消耗）→ <code>BMR × 活動係數</code></span></li>
-      <li><span class="num">3</span><span class="content">設定赤字：減脂建議 -200～-500 kcal，不宜過大</span></li>
-      <li><span class="num">4</span><span class="content">分配碳水
-          <ul class="sub-list">
+      <li class="step">
+        <span class="step-n">1</span>
+        <div class="step-body"><strong>算 BMR</strong>（女性 Mifflin-St Jeor）：<code>(10×體重) + (6.25×身高) − (5×年齡) − 161</code></div>
+      </li>
+      <li class="step">
+        <span class="step-n">2</span>
+        <div class="step-body"><strong>算 TDEE</strong>：<code>BMR × 活動係數</code></div>
+      </li>
+      <li class="step">
+        <span class="step-n">3</span>
+        <div class="step-body"><strong>設定赤字</strong>：建議 −200～−500 kcal，不宜過大</div>
+      </li>
+      <li class="step">
+        <span class="step-n">4</span>
+        <div class="step-body">
+          <strong>分配碳水</strong>
+          <ul class="sub">
             <li>高碳日（訓練日）：體重 × 3～4g</li>
-            <li>低碳日（休息日）：從 BMR 反推，確保總熱量 ≥ BMR</li>
             <li>中碳日（輕量活動）：體重 × 1.5～2g</li>
+            <li>低碳日（休息日）：從 BMR 反推，確保總熱量 ≥ BMR</li>
           </ul>
-        </span></li>
-      <li><span class="num">5</span><span class="content">蛋白質固定：體重 × 2～2.4g <span class="muted">（保肌關鍵）</span></span></li>
-      <li><span class="num">6</span><span class="content">脂肪填補：體重 × 0.8～1g <span class="muted">（不可低於這個量）</span></span></li>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-n">5</span>
+        <div class="step-body"><strong>蛋白質固定</strong>：體重 × 2.2g <span style="color:var(--muted)">（保肌關鍵）</span></div>
+      </li>
+      <li class="step">
+        <span class="step-n">6</span>
+        <div class="step-body"><strong>脂肪填補</strong>：體重 × 0.8g <span style="color:var(--muted)">（不可低於此量）</span></div>
+      </li>
     </ol>
   </div>
 
-  <hr class="divider">
+  <!-- Controls -->
+  <div class="panel">
+    <div class="act-row">
+      <div class="ctl-label">活動程度</div>
+      <div class="act-btns" id="actBtns">
+        <button class="act-btn" data-val="1.2">久坐</button>
+        <button class="act-btn active" data-val="1.375">輕量運動（週1-3）</button>
+        <button class="act-btn" data-val="1.55">中度運動（週3-5）</button>
+        <button class="act-btn" data-val="1.725">高強度（週6-7）</button>
+      </div>
+    </div>
 
-  <div class="cc-section">
-    <div class="cc-label">活動程度</div>
-    <div class="activity-btns" id="actBtns">
-      <button class="act-btn" data-val="1.2">久坐</button>
-      <button class="act-btn active" data-val="1.375">輕量運動（週1-3）</button>
-      <button class="act-btn" data-val="1.55">中度運動（週3-5）</button>
-      <button class="act-btn" data-val="1.725">高強度（週6-7）</button>
+    <div class="sliders-grid">
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">體重</span>
+          <span class="s-val" id="weightOut">59 kg</span>
+        </div>
+        <input type="range" id="weight" min="40" max="90" step="1" value="59">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">身高</span>
+          <span class="s-val" id="heightOut">166 cm</span>
+        </div>
+        <input type="range" id="height" min="145" max="185" step="1" value="166">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">年齡</span>
+          <span class="s-val" id="ageOut">25 歲</span>
+        </div>
+        <input type="range" id="age" min="18" max="55" step="1" value="25">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">週訓練天數</span>
+          <span class="s-val" id="trainDaysOut">3 天</span>
+        </div>
+        <input type="range" id="trainDays" min="2" max="6" step="1" value="3">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">減脂赤字</span>
+          <span class="s-val" id="deficitOut">−300 kcal</span>
+        </div>
+        <input type="range" id="deficit" min="200" max="500" step="50" value="300">
+      </div>
     </div>
   </div>
 
-  <div class="cc-section">
-    <div class="cc-row">
-      <label>週訓練天數</label>
-      <input type="range" id="trainDays" min="2" max="6" step="1" value="3">
-      <span class="val" id="trainDaysOut">3 天</span>
-    </div>
-    <div class="cc-row">
-      <label>減脂赤字</label>
-      <input type="range" id="deficit" min="200" max="500" step="50" value="300">
-      <span class="val" id="deficitOut">-300 kcal</span>
-    </div>
-    <div class="cc-row">
-      <label>年齡</label>
-      <input type="range" id="age" min="18" max="45" step="1" value="25">
-      <span class="val" id="ageOut">25 歲</span>
-    </div>
-  </div>
-
-  <hr class="divider">
-
+  <!-- Stats -->
   <div class="stat-grid" id="statsGrid"></div>
-  <div id="warnBox" class="warn"></div>
 
-  <div class="cc-label" style="margin-bottom:10px;">三種碳循環日的巨量營養素</div>
+  <!-- Warning -->
+  <div class="warn" id="warnBox"></div>
+
+  <!-- Day cards -->
+  <div class="day-section-label">三種碳循環日的巨量營養素</div>
   <div class="day-grid" id="dayGrid"></div>
 
-  <div class="info-row" id="infoRow"></div>
+  <!-- Info -->
+  <div class="info-panel" id="infoRow"></div>
+
 </div>
-
 <script>
-const weight = 59, height = 166;
-let actMultiplier = 1.375;
+  let actMultiplier = 1.375;
 
-function calcBMR(age) {
-  return 10 * weight + 6.25 * height - 5 * age - 161;
-}
+  function val(id) { return +document.getElementById(id).value; }
 
-function render() {
-  const trainDays = parseInt(document.getElementById('trainDays').value);
-  const deficit = parseInt(document.getElementById('deficit').value);
-  const age = parseInt(document.getElementById('age').value);
+  function calcBMR(w, h, a) { return 10 * w + 6.25 * h - 5 * a - 161; }
 
-  document.getElementById('trainDaysOut').textContent = trainDays + ' 天';
-  document.getElementById('deficitOut').textContent = '-' + deficit + ' kcal';
-  document.getElementById('ageOut').textContent = age + ' 歲';
+  function render() {
+    const weight    = val('weight');
+    const height    = val('height');
+    const age       = val('age');
+    const trainDays = val('trainDays');
+    const deficit   = val('deficit');
 
-  const bmr = Math.round(calcBMR(age));
-  const tdee = Math.round(bmr * actMultiplier);
-  const restDays = 7 - trainDays;
+    document.getElementById('weightOut').textContent    = weight    + ' kg';
+    document.getElementById('heightOut').textContent    = height    + ' cm';
+    document.getElementById('ageOut').textContent       = age       + ' 歲';
+    document.getElementById('trainDaysOut').textContent = trainDays + ' 天';
+    document.getElementById('deficitOut').textContent   = '−' + deficit + ' kcal';
 
-  const protein = Math.round(weight * 2.2);
-  const fat = Math.round(weight * 0.8);
-  const proteinCal = protein * 4;
-  const fatCal = Math.round(fat * 9);
-  const baseMacroCal = proteinCal + fatCal;
+    const bmr  = Math.round(calcBMR(weight, height, age));
+    const tdee = Math.round(bmr * actMultiplier);
+    const restDays = 7 - trainDays;
 
-  const highCarb = Math.round(weight * 3.5);
-  const highTotal = baseMacroCal + highCarb * 4;
+    const protein     = Math.round(weight * 2.2);
+    const fat         = Math.round(weight * 0.8);
+    const proteinCal  = protein * 4;
+    const fatCal      = Math.round(fat * 9);
+    const baseCal     = proteinCal + fatCal;
 
-  const lowCarbFromBMR = Math.round((bmr - baseMacroCal) / 4);
-  const lowCarbMin = Math.max(lowCarbFromBMR, 50);
-  const lowTotal = baseMacroCal + lowCarbMin * 4;
+    const highCarb  = Math.round(weight * 3.5);
+    const highTotal = baseCal + highCarb * 4;
 
-  const midCarb = Math.round((highCarb + lowCarbMin) / 2);
-  const midTotal = baseMacroCal + midCarb * 4;
+    const lowCarb   = Math.max(Math.round((bmr - baseCal) / 4), 50);
+    const lowTotal  = baseCal + lowCarb * 4;
 
-  const weekAvg = Math.round((highTotal * trainDays + lowTotal * restDays) / 7);
-  const weekDeficit = tdee - weekAvg;
-  const estLoss = (weekDeficit * 7 / 7700).toFixed(2);
+    const midCarb   = Math.round((highCarb + lowCarb) / 2);
+    const midTotal  = baseCal + midCarb * 4;
 
-  const warnBox = document.getElementById('warnBox');
-  if (weekAvg < bmr) {
-    warnBox.style.display = 'block';
-    warnBox.textContent = '⚠️ 週平均熱量仍低於 BMR，建議降低赤字或增加訓練天數。';
-  } else {
-    warnBox.style.display = 'none';
+    const weekAvg   = Math.round((highTotal * trainDays + lowTotal * restDays) / 7);
+    const weekDef   = tdee - weekAvg;
+    const estLoss   = (weekDef * 7 / 7700).toFixed(2);
+
+    const warnBox = document.getElementById('warnBox');
+    if (weekAvg < bmr) {
+      warnBox.style.display = 'block';
+      warnBox.textContent = '⚠ 週平均熱量低於 BMR，建議降低赤字或增加訓練天數。';
+    } else {
+      warnBox.style.display = 'none';
+    }
+
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="sc-label">BMR</div><div class="sc-val">${bmr}<span class="sc-unit">kcal</span></div></div>
+      <div class="stat-card"><div class="sc-label">TDEE</div><div class="sc-val">${tdee}<span class="sc-unit">kcal</span></div></div>
+      <div class="stat-card"><div class="sc-label">週平均熱量</div><div class="sc-val">${weekAvg}<span class="sc-unit">kcal</span></div></div>
+      <div class="stat-card"><div class="sc-label">估計週減脂</div><div class="sc-val">${Math.max(0,+estLoss).toFixed(2)}<span class="sc-unit">kg</span></div></div>
+    `;
+
+    document.getElementById('dayGrid').innerHTML = `
+      <div class="day-card high-day">
+        <div class="d-title">高碳日</div>
+        <div class="d-row"><span class="ml">碳水</span><span class="mv">${highCarb}g</span></div>
+        <div class="d-row"><span class="ml">蛋白質</span><span class="mv">${protein}g</span></div>
+        <div class="d-row"><span class="ml">脂肪</span><span class="mv">${fat}g</span></div>
+        <div class="d-total"><span class="ml">總熱量</span><span class="mv">${highTotal} kcal</span></div>
+        <span class="pill ph">訓練日 × ${trainDays}天</span>
+      </div>
+      <div class="day-card mid-day">
+        <div class="d-title">中碳日</div>
+        <div class="d-row"><span class="ml">碳水</span><span class="mv">${midCarb}g</span></div>
+        <div class="d-row"><span class="ml">蛋白質</span><span class="mv">${protein}g</span></div>
+        <div class="d-row"><span class="ml">脂肪</span><span class="mv">${fat}g</span></div>
+        <div class="d-total"><span class="ml">總熱量</span><span class="mv">${midTotal} kcal</span></div>
+        <span class="pill pm">輕度活動日</span>
+      </div>
+      <div class="day-card low-day">
+        <div class="d-title">低碳日</div>
+        <div class="d-row"><span class="ml">碳水</span><span class="mv">${lowCarb}g</span></div>
+        <div class="d-row"><span class="ml">蛋白質</span><span class="mv">${protein}g</span></div>
+        <div class="d-row"><span class="ml">脂肪</span><span class="mv">${fat}g</span></div>
+        <div class="d-total"><span class="ml">總熱量</span><span class="mv">${lowTotal} kcal ≥ BMR</span></div>
+        <span class="pill pl">休息日 × ${restDays}天</span>
+      </div>
+    `;
+
+    document.getElementById('infoRow').innerHTML = `
+      蛋白質每天固定 <strong>${protein}g</strong>、脂肪 <strong>${fat}g</strong>，只有碳水隨日期波動。<br>
+      週赤字約 <strong>${Math.max(0, weekDef * 7)}</strong> kcal，理論每週減脂 <strong>${Math.max(0,+estLoss).toFixed(2)} kg</strong>（個體差異大，僅供參考）。
+    `;
   }
 
-  document.getElementById('statsGrid').innerHTML = `
-    <div class="stat-card"><div class="s-label">基礎代謝率 BMR</div><div class="s-val">${bmr} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">kcal</span></div></div>
-    <div class="stat-card"><div class="s-label">每日消耗 TDEE</div><div class="s-val">${tdee} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">kcal</span></div></div>
-    <div class="stat-card"><div class="s-label">週平均熱量</div><div class="s-val">${weekAvg} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">kcal</span></div></div>
-    <div class="stat-card"><div class="s-label">估計週減脂</div><div class="s-val">${estLoss} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">kg</span></div></div>
-  `;
+  document.getElementById('actBtns').addEventListener('click', e => {
+    const btn = e.target.closest('.act-btn');
+    if (!btn) return;
+    document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    actMultiplier = parseFloat(btn.dataset.val);
+    render();
+  });
 
-  document.getElementById('dayGrid').innerHTML = `
-    <div class="day-card high-day">
-      <div class="d-title">高碳日</div>
-      <div class="d-macro"><span class="m-label">碳水</span><span class="m-val">${highCarb}g</span></div>
-      <div class="d-macro"><span class="m-label">蛋白質</span><span class="m-val">${protein}g</span></div>
-      <div class="d-macro"><span class="m-label">脂肪</span><span class="m-val">${fat}g</span></div>
-      <div class="d-macro" style="margin-top:6px;border-top:0.5px solid var(--color-border-tertiary);padding-top:6px;"><span class="m-label">總熱量</span><span class="m-val">${highTotal} kcal</span></div>
-      <span class="pill pill-high">訓練日 × ${trainDays}天</span>
-    </div>
-    <div class="day-card mid-day">
-      <div class="d-title">中碳日</div>
-      <div class="d-macro"><span class="m-label">碳水</span><span class="m-val">${midCarb}g</span></div>
-      <div class="d-macro"><span class="m-label">蛋白質</span><span class="m-val">${protein}g</span></div>
-      <div class="d-macro"><span class="m-label">脂肪</span><span class="m-val">${fat}g</span></div>
-      <div class="d-macro" style="margin-top:6px;border-top:0.5px solid var(--color-border-tertiary);padding-top:6px;"><span class="m-label">總熱量</span><span class="m-val">${midTotal} kcal</span></div>
-      <span class="pill pill-mid">輕度活動日</span>
-    </div>
-    <div class="day-card low-day">
-      <div class="d-title">低碳日</div>
-      <div class="d-macro"><span class="m-label">碳水</span><span class="m-val">${lowCarbMin}g <span style="font-size:11px;color:#993C1D">（BMR底線）</span></span></div>
-      <div class="d-macro"><span class="m-label">蛋白質</span><span class="m-val">${protein}g</span></div>
-      <div class="d-macro"><span class="m-label">脂肪</span><span class="m-val">${fat}g</span></div>
-      <div class="d-macro" style="margin-top:6px;border-top:0.5px solid var(--color-border-tertiary);padding-top:6px;"><span class="m-label">總熱量</span><span class="m-val">${lowTotal} kcal ≥ BMR</span></div>
-      <span class="pill pill-low">休息日 × ${restDays}天</span>
-    </div>
-  `;
+  ['weight','height','age','trainDays','deficit'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+  });
 
-  document.getElementById('infoRow').innerHTML = `
-    蛋白質每天固定 <strong>${protein}g</strong>、脂肪 <strong>${fat}g</strong>，只有碳水隨日期波動。<br>
-    週赤字約 <strong>${Math.max(0, weekDeficit * 7)}</strong> kcal，理論每週減脂 <strong>${estLoss} kg</strong>（個體差異大，僅供參考）。
-  `;
-}
-
-document.getElementById('actBtns').addEventListener('click', e => {
-  const btn = e.target.closest('.act-btn');
-  if (!btn) return;
-  document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  actMultiplier = parseFloat(btn.dataset.val);
   render();
-});
-
-['trainDays', 'deficit', 'age'].forEach(id => {
-  document.getElementById(id).addEventListener('input', render);
-});
-
-render();
 </script>
+</body>
+</html>
