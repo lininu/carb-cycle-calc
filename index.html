@@ -186,6 +186,13 @@
 
     .s-label { font-size: 0.875em; font-weight: 500; color: var(--muted); }
 
+    .s-hint {
+      font-size: 0.75em;
+      color: var(--muted);
+      opacity: 0.65;
+      line-height: 1.55;
+    }
+
     .s-val {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.875em;
@@ -417,7 +424,7 @@
         <div class="step-body">
           <strong>分配碳水</strong>
           <ul class="sub">
-            <li>高碳日（訓練日）：體重 × 3～4g</li>
+            <li>高碳日（訓練日）：體重 × 3.5g 起（自動調整，確保高碳 ≥ 週均目標）</li>
             <li>中碳日（輕量活動）：體重 × 1.5～2g</li>
             <li>低碳日（休息日）：從 BMR 反推，確保總熱量 ≥ BMR</li>
           </ul>
@@ -425,11 +432,24 @@
       </li>
       <li class="step">
         <span class="step-n">5</span>
-        <div class="step-body"><strong>蛋白質固定</strong>：體重 × 2.2g <span style="color:var(--muted)">（保肌關鍵）</span></div>
+        <div class="step-body">
+          <strong>蛋白質</strong>：體重 × 1.4–2.4g（可調）
+          <ul class="sub">
+            <li>Morton et al. 2018 meta-analysis：≥ 1.62 g/kg 可最大化肌肉蛋白質合成</li>
+            <li>減脂赤字期建議 1.8–2.4 g/kg：熱量不足時蛋白質易被當能量消耗</li>
+            <li>ISSN 立場聲明：1.4–2.0 g/kg 覆蓋大多數人，高訓練量者可到 2.4 g/kg</li>
+          </ul>
+        </div>
       </li>
       <li class="step">
         <span class="step-n">6</span>
-        <div class="step-body"><strong>脂肪填補</strong>：體重 × 0.8g <span style="color:var(--muted)">（不可低於此量）</span></div>
+        <div class="step-body">
+          <strong>脂肪</strong>：體重 × 0.8–1.2g（可調）
+          <ul class="sub">
+            <li>低於 0.7 g/kg 恐影響荷爾蒙分泌，女性尤其明顯</li>
+            <li>常見建議 0.8–1.2 g/kg；碳循環通常壓低脂肪以保留碳水空間</li>
+          </ul>
+        </div>
       </li>
     </ol>
   </div>
@@ -489,6 +509,22 @@
         </div>
         <input type="range" id="deficit" min="200" max="500" step="50" value="300">
       </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">蛋白質倍數</span>
+          <span class="s-val" id="proteinMultiOut">2.2 g/kg</span>
+        </div>
+        <input type="range" id="proteinMulti" min="1.4" max="2.4" step="0.1" value="2.2">
+        <div class="s-hint">Morton et al. 2018：≥ 1.62 g/kg｜減脂期建議 1.8–2.4 g/kg｜ISSN：1.4–2.4 g/kg</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="s-label">脂肪倍數</span>
+          <span class="s-val" id="fatMultiOut">0.8 g/kg</span>
+        </div>
+        <input type="range" id="fatMulti" min="0.8" max="1.2" step="0.1" value="0.8">
+        <div class="s-hint">常見建議 0.8–1.2 g/kg｜低於 0.7 g/kg 恐影響荷爾蒙（女性尤其明顯）</div>
+      </div>
     </div>
   </div>
 
@@ -538,23 +574,30 @@
     document.getElementById('ageOut').textContent       = age       + ' 歲';
     document.getElementById('trainDaysOut').textContent = trainDays + ' 天';
     document.getElementById('restDaysOut').textContent  = restDays  + ' 天';
-    document.getElementById('deficitOut').textContent   = '−' + deficit + ' kcal';
+    document.getElementById('deficitOut').textContent      = '−' + deficit + ' kcal';
+    document.getElementById('proteinMultiOut').textContent = val('proteinMulti').toFixed(1) + ' g/kg';
+    document.getElementById('fatMultiOut').textContent     = val('fatMulti').toFixed(1)     + ' g/kg';
 
     const bmr  = Math.round(calcBMR(weight, height, age));
     const tdee = Math.round(bmr * actMultiplier);
 
-    const protein     = Math.round(weight * 2.2);
-    const fat         = Math.round(weight * 0.8);
+    const protein     = Math.round(weight * val('proteinMulti'));
+    const fat         = Math.round(weight * val('fatMulti'));
     const proteinCal  = protein * 4;
     const fatCal      = Math.round(fat * 9);
     const baseCal     = proteinCal + fatCal;
 
-    const highCarb  = Math.round(weight * 3.5);
-    const highTotal = baseCal + highCarb * 4;
-
     // 反推 lowCarb，使週平均命中 tdee − deficit
     // 7*(tdee−deficit) = T*highTotal + M*(baseCal+2*highCarb+2*lowCarb) + R*(baseCal+4*lowCarb)
     const weekTarget = tdee - deficit;
+
+    // 動態調高倍數，確保高碳日熱量 ≥ 週均目標（避免低碳日比高碳日高）
+    let highCarbMulti = 3.5;
+    while (baseCal + Math.round(weight * highCarbMulti) * 4 < weekTarget && highCarbMulti < 6) {
+      highCarbMulti += 0.25;
+    }
+    const highCarb  = Math.round(weight * highCarbMulti);
+    const highTotal = baseCal + highCarb * 4;
     const numerator  = 7 * weekTarget - trainDays * highTotal - (midDays + restDays) * baseCal - 2 * midDays * highCarb;
     const denominator = 2 * midDays + 4 * restDays;
     const lowCarbRaw  = Math.round(numerator / denominator);
@@ -615,6 +658,34 @@
       蛋白質每天固定 <strong>${protein}g</strong>、脂肪 <strong>${fat}g</strong>，只有碳水隨日期波動。<br>
       週赤字約 <strong>${Math.max(0, weekDef * 7)}</strong> kcal，理論每週減脂 <strong>${Math.max(0,+estLoss).toFixed(2)} kg</strong>（個體差異大，僅供參考）。
     `;
+
+    saveState();
+  }
+
+  const STORAGE_KEY = 'carbCycleState';
+  const SLIDER_IDS  = ['weight','height','age','trainDays','restDays','deficit','proteinMulti','fatMulti'];
+
+  function saveState() {
+    const state = { actMultiplier };
+    SLIDER_IDS.forEach(id => { state[id] = val(id); });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function loadState() {
+    try {
+      const state = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (!state) return;
+      SLIDER_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && state[id] != null) el.value = state[id];
+      });
+      if (state.actMultiplier) {
+        actMultiplier = state.actMultiplier;
+        document.querySelectorAll('.act-btn').forEach(b => {
+          b.classList.toggle('active', parseFloat(b.dataset.val) === actMultiplier);
+        });
+      }
+    } catch (e) {}
   }
 
   document.getElementById('actBtns').addEventListener('click', e => {
@@ -626,10 +697,11 @@
     render();
   });
 
-  ['weight','height','age','trainDays','restDays','deficit'].forEach(id => {
+  SLIDER_IDS.forEach(id => {
     document.getElementById(id).addEventListener('input', render);
   });
 
+  loadState();
   render();
 </script>
 </body>
