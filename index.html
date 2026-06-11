@@ -504,10 +504,11 @@
       </div>
       <div class="slider-row">
         <div class="slider-head">
-          <span class="s-label">減脂赤字</span>
+          <span class="s-label">每日赤字</span>
           <span class="s-val" id="deficitOut">−300 kcal</span>
         </div>
         <input type="range" id="deficit" min="200" max="500" step="50" value="300">
+        <div class="s-hint" id="deficitHint">週赤字約為：2100 kcal</div>
       </div>
       <div class="slider-row">
         <div class="slider-head">
@@ -575,6 +576,7 @@
     document.getElementById('trainDaysOut').textContent = trainDays + ' 天';
     document.getElementById('restDaysOut').textContent  = restDays  + ' 天';
     document.getElementById('deficitOut').textContent      = '−' + deficit + ' kcal';
+    document.getElementById('deficitHint').textContent     = '週赤字約為：' + (deficit * 7) + ' kcal';
     document.getElementById('proteinMultiOut').textContent = val('proteinMulti').toFixed(1) + ' g/kg';
     document.getElementById('fatMultiOut').textContent     = val('fatMulti').toFixed(1)     + ' g/kg';
 
