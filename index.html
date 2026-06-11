@@ -16,7 +16,7 @@
       --surface2: #1C1C22;
       --border:   rgba(255,255,255,0.10);
       --text:     #EEEAE0;
-      --muted:    #9E9B94;
+      --muted:    #cccccc;
       --high:     #22C55E;
       --mid:      #60A5FA;
       --low:      #FB923C;
@@ -67,8 +67,8 @@
     }
 
     .header-desc {
-      font-size: 0.9375em;
-      font-weight: 300;
+      font-size: 1em;
+      font-weight: 400;
       color: var(--muted);
       line-height: 1.75;
       max-width: 460px;
@@ -112,7 +112,7 @@
     }
 
     .step-body {
-      font-size: 0.8125em;
+      font-size: 0.875em;
       font-weight: 400;
       color: var(--muted);
       line-height: 1.65;
@@ -122,7 +122,7 @@
 
     code {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.6875em;
+      font-size: 0.8125em;
       background: var(--surface2);
       color: var(--mid);
       padding: 2px 6px;
@@ -130,14 +130,14 @@
     }
 
     .sub { list-style: none; margin-top: 5px; display: flex; flex-direction: column; gap: 3px; }
-    .sub li { font-size: 0.75em; color: var(--muted); padding-left: 14px; position: relative; }
-    .sub li::before { content: '—'; position: absolute; left: 0; font-size: 0.625em; }
+    .sub li { font-size: 0.875em; color: var(--muted); padding-left: 14px; position: relative; }
+    .sub li::before { content: '—'; position: absolute; left: 0; }
 
     /* ── Controls ── */
     .act-row { margin-bottom: 1.375rem; }
 
     .ctl-label {
-      font-size: 0.75em;
+      font-size: 0.875em;
       font-weight: 500;
       color: var(--muted);
       letter-spacing: 0.04em;
@@ -148,7 +148,7 @@
 
     .act-btn {
       padding: 7px 14px;
-      font-size: 0.75em;
+      font-size: 0.875em;
       font-weight: 500;
       font-family: 'DM Sans', sans-serif;
       border: 1px solid var(--border);
@@ -183,11 +183,11 @@
       align-items: baseline;
     }
 
-    .s-label { font-size: 0.75em; font-weight: 500; color: var(--muted); }
+    .s-label { font-size: 0.875em; font-weight: 500; color: var(--muted); }
 
     .s-val {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8125em;
+      font-size: 0.875em;
       font-weight: 500;
       color: var(--text);
     }
@@ -268,7 +268,7 @@
 
     /* ── Warning ── */
     .warn {
-      font-size: 0.8125em;
+      font-size: 0.875em;
       font-weight: 400;
       color: var(--low);
       background: var(--low-bg);
@@ -342,8 +342,8 @@
 
     .d-row:last-of-type { border-bottom: none; }
 
-    .d-row .ml { font-size: 0.75em; font-weight: 400; color: var(--muted); }
-    .d-row .mv { font-family: 'JetBrains Mono', monospace; font-size: 0.8125em; font-weight: 500; color: var(--text); }
+    .d-row .ml { font-size: 0.875em; font-weight: 400; color: var(--muted); }
+    .d-row .mv { font-family: 'JetBrains Mono', monospace; font-size: 0.875em; font-weight: 500; color: var(--text); }
 
     .d-total {
       display: flex;
@@ -353,7 +353,7 @@
       border-top: 1px solid rgba(255,255,255,0.1);
     }
 
-    .d-total .ml { font-size: 0.75em; font-weight: 500; color: var(--text); }
+    .d-total .ml { font-size: 0.875em; font-weight: 500; color: var(--text); }
 
     .pill {
       display: inline-block;
@@ -376,7 +376,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.0625rem 1.25rem;
-      font-size: 0.8125em;
+      font-size: 0.875em;
       font-weight: 400;
       color: var(--muted);
       line-height: 1.85;
