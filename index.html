@@ -552,7 +552,14 @@
     const highCarb  = Math.round(weight * 3.5);
     const highTotal = baseCal + highCarb * 4;
 
-    const lowCarb   = Math.max(Math.round((bmr - baseCal) / 4), 50);
+    // 反推 lowCarb，使週平均命中 tdee − deficit
+    // 7*(tdee−deficit) = T*highTotal + M*(baseCal+2*highCarb+2*lowCarb) + R*(baseCal+4*lowCarb)
+    const weekTarget = tdee - deficit;
+    const numerator  = 7 * weekTarget - trainDays * highTotal - (midDays + restDays) * baseCal - 2 * midDays * highCarb;
+    const denominator = 2 * midDays + 4 * restDays;
+    const lowCarbRaw  = Math.round(numerator / denominator);
+    const lowCarbFloor = Math.max(Math.ceil((bmr - baseCal) / 4), 50);
+    const lowCarb   = Math.max(lowCarbRaw, lowCarbFloor);
     const lowTotal  = baseCal + lowCarb * 4;
 
     const midCarb   = Math.round((highCarb + lowCarb) / 2);
@@ -563,9 +570,9 @@
     const estLoss   = (weekDef * 7 / 7700).toFixed(2);
 
     const warnBox = document.getElementById('warnBox');
-    if (weekAvg < bmr) {
+    if (lowCarb > lowCarbRaw) {
       warnBox.style.display = 'block';
-      warnBox.textContent = '⚠ 週平均熱量低於 BMR，建議降低赤字或增加訓練天數。';
+      warnBox.textContent = '⚠ 低碳日熱量已觸底（BMR 保護線），實際赤字小於目標，建議增加訓練天數或降低目標赤字。';
     } else {
       warnBox.style.display = 'none';
     }
